@@ -20,20 +20,20 @@ from fastapi import FastAPI, BackgroundTasks
 
 app = FastAPI(title="agent_brand_html_parser", version="2.0.0")
 class WebsiteParser:
-    def __init__(self):
+    def __init__(self, job_id, brand):
         self.output_filename = None
         self.upload_url = None
         self.count = 0
         self.log_url = None
         self.session = requests.Session()
         self.code = str(uuid.uuid4())
-        self.setup_logging()
-        self.job_id=''
+        self.job_id = job_id  # Set job_id
+        self.brand = brand    # Set brand
+        self.setup_logging()   # Call setup_logging after job_id and brand are set
 
     def setup_logging(self):
         current_date = datetime.datetime.now().strftime("%d_%m_%Y")
         self.log_file_name = f'{self.brand}_{self.code}_{current_date}.log'
-        # Initially get a unique logger using a UUID, brand ID, and job ID
         logger_name = f"Brand ID: {self.brand}, Job ID: {self.job_id}, UUID: {self.code}"
         self.logger = logging.getLogger(logger_name)
 
@@ -57,9 +57,7 @@ class WebsiteParser:
         self.logger.info("This is what info messages will look like")
         self.logger.error("This is what error messages will look like")
         self.logger.critical("This is what a critical error message looks like")
-
-        self.logger = logging.getLogger(__name__)
-        self.logger.info("This is a log message from the Agent script")
+        # Remove: self.logger = logging.getLogger(__name__)  # Avoid overriding the logger
     def convert_to_tsv(self, data):
         output = []
         for row in data:
@@ -175,9 +173,8 @@ class WebsiteParser:
 
 
 class BottegaVenetaParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'bottega_veneta'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'bottega_veneta')
 
     #COMPLETE
 
@@ -254,9 +251,8 @@ class BottegaVenetaParser(WebsiteParser):
 
         return parsed_data
 class FendiProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'fendi'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'fendi')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
         column_names = [
@@ -289,9 +285,8 @@ class FendiProductParser(WebsiteParser):
 
         return parsed_data
 class GivenchyProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'givenchy'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'givenchy')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
         column_names = [
@@ -335,10 +330,8 @@ class GivenchyProductParser(WebsiteParser):
 
         return parsed_data
 class CanadaGooseProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'canada_goose'
-
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'canada_goose')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
         column_names = [
@@ -397,9 +390,8 @@ class CanadaGooseProductParser(WebsiteParser):
 
         return parsed_data
 class VejaProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'veja'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'veja')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
         column_names = [
@@ -443,9 +435,8 @@ class VejaProductParser(WebsiteParser):
 
         return parsed_data
 class StellaProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'stella_mccartney'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'stella_mccartney')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
         column_names = [
@@ -496,9 +487,8 @@ class StellaProductParser(WebsiteParser):
 
         return parsed_data
 class TomFordProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'tom_ford'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'tom_ford')
     def parse_product_blocks(self, soup,category):
         parsed_data = []
         column_names = [
@@ -566,10 +556,8 @@ class TomFordProductParser(WebsiteParser):
 
         return None
 class OffWhiteProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'off_white'
-
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'off_white')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
 
@@ -634,12 +622,8 @@ class OffWhiteProductParser(WebsiteParser):
 
         return parsed_data
 class IsabelMarantProductParser(WebsiteParser):
-    ## This class parses the HTML files from the Bottega Veneta website.
-    ## website: https://www.givenchy.com/us/en-US
-    def __init__(self):
-        self.brand = 'isabel_marant'
-
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'isabel_marant')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
         column_names = [
@@ -703,14 +687,11 @@ class IsabelMarantProductParser(WebsiteParser):
 
         return parsed_data
 class ChloeProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'chloe'  # Replace spaces with underscores
+    def __init__(self, job_id):
         options = webdriver.ChromeOptions()
-        options.add_argument(
-            "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
         self.driver = webdriver.Chrome(options=options)
-
-        super().__init__()
+        super().__init__(job_id, 'chloe')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
         column_names = [
@@ -787,10 +768,8 @@ class ChloeProductParser(WebsiteParser):
         else:
             print(f'Your URL is broken: {product_url}')
 class MCMProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'mcm'  # Replace spaces with underscores
-
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'mcm')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
         column_names = [
@@ -831,12 +810,8 @@ class MCMProductParser(WebsiteParser):
             parsed_data.append(product_data)
         return parsed_data
 class CultGaiaProductParser(WebsiteParser):
-    ## This class parses the HTML files from the Cult Gaia website.
-    ## website: https://www.cultgaia.com
-    def __init__(self):
-        self.brand = 'cult_gaia'
-
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'cult_gaia')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
         column_names = [
@@ -886,12 +861,8 @@ class CultGaiaProductParser(WebsiteParser):
 
         return parsed_data
 class GoldenGooseProductParser(WebsiteParser):
-    ## This class parses the HTML files from the Golden Goose website.
-    ## website: https://www.goldengoose.com
-
-    def __init__(self):
-        self.brand = 'golden_goose'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'golden_goose')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
         column_names = [
@@ -940,9 +911,8 @@ class GoldenGooseProductParser(WebsiteParser):
 
         return parsed_data
 class BalenciagaProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'balenciaga'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'balenciaga')
     def parse_product_blocks(self, soup, category):
         product_blocks = soup.find_all('article', class_='c-product')
         parsed_data = []
@@ -1017,10 +987,8 @@ class BalenciagaProductParser(WebsiteParser):
 
         return parsed_data
 class StoneIslandProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'stone_island'
-
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'stone_island')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
         container_prods = soup.find('ul', {'class': 'products'})
@@ -1119,10 +1087,8 @@ class StoneIslandProductParser(WebsiteParser):
 
         return parsed_data
 class EtroProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'etro'
-
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'etro')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
         column_names = [
@@ -1181,9 +1147,8 @@ class EtroProductParser(WebsiteParser):
 
         return parsed_data
 class BalmainProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'balmain'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'balmain')
     def parse_product_blocks(self, soup, category):
 
         parsed_data = []
@@ -1241,9 +1206,8 @@ class BalmainProductParser(WebsiteParser):
 
         return parsed_data
 class VersaceProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'versace'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'versace')
     def parse_product_blocks(self, soup, category):
         product_blocks = soup.select('.product-tile-show')
         parsed_data = []
@@ -1294,9 +1258,8 @@ class VersaceProductParser(WebsiteParser):
 
         return parsed_data
 class FerragamoProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'ferragamo'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'ferragamo')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
         column_names = [
@@ -1331,10 +1294,8 @@ class FerragamoProductParser(WebsiteParser):
 
         return parsed_data
 class BurberryProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'burberry'
-
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'burberry')
     def parse_product_blocks(self, soup, category):
 
         product_blocks = soup.select('a.product-card-v2-anchor, a.redesigned-product-card__link')
@@ -1386,10 +1347,8 @@ class BurberryProductParser(WebsiteParser):
 
         return parsed_data
 class KenzoProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'kenzo'
-
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'kenzo')
     def parse_product_blocks(self, soup, category):
 
         product_blocks = soup.select("div[is='m-product-tile']")
@@ -1502,9 +1461,8 @@ class KenzoProductParser(WebsiteParser):
         biggest_image_url = max(images, key=lambda x: x[0])[1]
         return biggest_image_url
 class JimmyChooProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'jimmy_choo'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'jimmy_choo')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
 
@@ -1613,9 +1571,8 @@ class JimmyChooProductParser(WebsiteParser):
 
         return parsed_data
 class BrunelloCucinelliProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'brunello_cucinelli'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'brunello_cucinelli')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
         column_names = [
@@ -1701,9 +1658,8 @@ class BrunelloCucinelliProductParser(WebsiteParser):
         text = text.split('\$')[0].split('€')[0]
         return text.strip()
 class DSquaredProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'dsquared'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'dsquared')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
         container_prods = soup.find('div', {'id': 'productgrid'})
@@ -1755,9 +1711,8 @@ class DSquaredProductParser(WebsiteParser):
 
         return parsed_data
 class CelineProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'celine'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'celine')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
         container_prods = soup.find_all('div', class_='m-product-listing')
@@ -1821,9 +1776,8 @@ class CelineProductParser(WebsiteParser):
 
         return parsed_data
 class MarniProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'marni'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'marni')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
 
@@ -1881,9 +1835,8 @@ class MarniProductParser(WebsiteParser):
 
         return parsed_data
 class PradaProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'prada'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'prada')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
 
@@ -1936,9 +1889,8 @@ class PradaProductParser(WebsiteParser):
 
         return parsed_data
 class ValentinoProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'valentino'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'valentino')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
 
@@ -1989,9 +1941,8 @@ class ValentinoProductParser(WebsiteParser):
 
         return parsed_data
 class JacquemusProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'jacquemus'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'jacquemus')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
 
@@ -2072,9 +2023,8 @@ class JacquemusProductParser(WebsiteParser):
 
         return parsed_data
 class LouboutinProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'louboutin'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'louboutin')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
 
@@ -2171,9 +2121,8 @@ class LouboutinProductParser(WebsiteParser):
             print(f'Your URL is broken: {product_url}')
             return '', '', '', ''
 class PalmAngelsProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'palm_angels'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'palm_angels')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
 
@@ -2244,9 +2193,8 @@ class PalmAngelsProductParser(WebsiteParser):
 
         return parsed_data
 class MooseKnucklesProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'moose_knuckles'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'moose_knuckles')
 
     def parse_product_blocks(self, soup, category):
         parsed_data = []
@@ -2308,9 +2256,8 @@ class MooseKnucklesProductParser(WebsiteParser):
 
         return parsed_data
 class AcneStudiosProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'acne_studios'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'acne_studios')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
 
@@ -2397,9 +2344,8 @@ class AcneStudiosProductParser(WebsiteParser):
         else:
             print(f'Your URL is broken: {product_url}')
 class TheRowProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'the_row'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'the_row')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
 
@@ -2496,9 +2442,8 @@ class TheRowProductParser(WebsiteParser):
         else:
             print(f'Your URL is broken: {product_url}')
 class ManoloBlahnikProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'manolo_blahnik'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'manolo_blahnik')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
 
@@ -2560,9 +2505,8 @@ class ManoloBlahnikProductParser(WebsiteParser):
 
         return parsed_data
 class GianvitoRossiProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'gianvito_ross'  # Replace spaces with underscores
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'gianvito_ross')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
 
@@ -2620,9 +2564,8 @@ class GianvitoRossiProductParser(WebsiteParser):
 
         return parsed_data
 class MiuMiuProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'miu_miu'  # Replace spaces with underscores
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'miu_miu')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
 
@@ -2667,9 +2610,8 @@ class MiuMiuProductParser(WebsiteParser):
 
         return parsed_data
 class BirkenstockProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'birkenstock'  # Replace spaces with underscores
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'birkenstock')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
 
@@ -2729,9 +2671,8 @@ class BirkenstockProductParser(WebsiteParser):
 
         return parsed_data
 class AquazzuraProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'aquazzura'  # Replace spaces with underscores
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'aquazzura')
     def parse_product_blocks(self, soup, category):
         parsed_data = []
 
@@ -2787,10 +2728,9 @@ class AquazzuraProductParser(WebsiteParser):
 
         return parsed_data
 class HernoProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'herno'  # Replace spaces with underscores
-        super().__init__()
-def parse_product_blocks(self, soup, category):
+    def __init__(self, job_id):
+        super().__init__(job_id, 'herno')
+    def parse_product_blocks(self, soup, category):
         parsed_data = []
 
         column_names = [
@@ -2869,9 +2809,8 @@ def parse_product_blocks(self, soup, category):
 
         return parsed_data
 class LanvinProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'lanvin'  # Replace spaces with underscores
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'lanvin')
 
     def parse_product_blocks(self, soup, category):
         parsed_data = []
@@ -2944,9 +2883,8 @@ class LanvinProductParser(WebsiteParser):
 
 
 class BallyProductParser(WebsiteParser):
-    def __init__(self):
-        self.brand = 'bally'
-        super().__init__()
+    def __init__(self, job_id):
+        super().__init__(job_id, 'bally')
 
     def parse_product_blocks(self, soup,category):
         parsed_data = []
@@ -3011,176 +2949,133 @@ class BallyProductParser(WebsiteParser):
 
 
 
-def run_parser(job_id,brand_id,source_url):
-    print(job_id,brand_id,source_url)
+def run_parser(job_id, brand_id, source_url):
+    print(job_id, brand_id, source_url)
     if brand_id == '93':
-        BottegaParser = BottegaVenetaParser()
-        BottegaParser.job_id=job_id
+        BottegaParser = BottegaVenetaParser(job_id)
         BottegaParser.parse_website(source_url)
     if brand_id == '201':
-        FendiParser = FendiProductParser()
-        FendiParser.job_id = job_id
+        FendiParser = FendiProductParser(job_id)
         FendiParser.parse_website(source_url)
     if brand_id == '498':
-        StellaParser = StellaProductParser()
-        StellaParser.job_id = job_id
+        StellaParser = StellaProductParser(job_id)
         StellaParser.parse_website(source_url)
     if brand_id == '227':
-        GivenchyParser = GivenchyProductParser()
-        GivenchyParser.job_id = job_id
+        GivenchyParser = GivenchyProductParser(job_id)
         GivenchyParser.parse_website(source_url)
     if brand_id == '110':
-        CanadaGooseParser = CanadaGooseProductParser()
-        CanadaGooseParser.job_id = job_id
+        CanadaGooseParser = CanadaGooseProductParser(job_id)
         CanadaGooseParser.parse_website(source_url)
     if brand_id == '542':
-        VejaParser = VejaProductParser()
-        VejaParser.job_id = job_id
+        VejaParser = VejaProductParser(job_id)
         VejaParser.parse_website(source_url)
     if brand_id == '252':
-        IsabelMarantParser = IsabelMarantProductParser()
-        IsabelMarantParser.job_id = job_id
+        IsabelMarantParser = IsabelMarantProductParser(job_id)
         IsabelMarantParser.parse_website(source_url)
     if brand_id == '125':
-        ChloeParser=ChloeProductParser()
-        ChloeParser.job_id = job_id
+        ChloeParser = ChloeProductParser(job_id)
         ChloeParser.parse_website(source_url)
     if brand_id == '343':
-        MCMParser=MCMProductParser()
-        MCMParser.job_id = job_id
+        MCMParser = MCMProductParser(job_id)
         MCMParser.parse_website(source_url)
-    if brand_id == '228 ':
-        GoldenGooseParser=GoldenGooseProductParser()
-        GoldenGooseParser.job_id = job_id
+    if brand_id == '228':
+        GoldenGooseParser = GoldenGooseProductParser(job_id)
         GoldenGooseParser.parse_website(source_url)
     if brand_id == '66':
-        BalenciagaParser=BalenciagaProductParser()
-        BalenciagaParser.job_id = job_id
+        BalenciagaParser = BalenciagaProductParser(job_id)
         BalenciagaParser.parse_website(source_url)
     if brand_id == '500':
-        StoneIslandParser = StoneIslandProductParser()
-        StoneIslandParser.job_id = job_id
+        StoneIslandParser = StoneIslandProductParser(job_id)
         StoneIslandParser.parse_website(source_url)
     if brand_id == '187':
-        EtroParser = EtroProductParser()
-        EtroParser.job_id = job_id
+        EtroParser = EtroProductParser(job_id)
         EtroParser.parse_website(source_url)
     if brand_id == '68':
-        BalmainParser = BalmainProductParser()
-        BalmainParser.job_id = job_id
+        BalmainParser = BalmainProductParser(job_id)
         BalmainParser.parse_website(source_url)
     if brand_id == '544':
-        VersaceParser = VersaceProductParser()
-        VersaceParser.job_id = job_id
+        VersaceParser = VersaceProductParser(job_id)
         VersaceParser.parse_website(source_url)
     if brand_id == '481':
-        FerragamoParser = FerragamoProductParser()
-        FerragamoParser.job_id = job_id
+        FerragamoParser = FerragamoProductParser(job_id)
         FerragamoParser.parse_website(source_url)
     if brand_id == '101':
-        BurberryParser = BurberryProductParser()
-        BurberryParser.job_id = job_id
+        BurberryParser = BurberryProductParser(job_id)
         BurberryParser.parse_website(source_url)
     if brand_id == '275':
-        KenzoParser = KenzoProductParser()
-        KenzoParser.job_id = job_id
+        KenzoParser = KenzoProductParser(job_id)
         KenzoParser.parse_website(source_url)
     if brand_id == '266':
-        JimmyChooParser = JimmyChooProductParser()
-        JimmyChooParser.job_id = job_id
+        JimmyChooParser = JimmyChooProductParser(job_id)
         JimmyChooParser.parse_website(source_url)
     if brand_id == '601':
-        BrunelloCucinelliParser = BrunelloCucinelliProductParser()
-        BrunelloCucinelliParser.job_id = job_id
+        BrunelloCucinelliParser = BrunelloCucinelliProductParser(job_id)
         BrunelloCucinelliParser.parse_website(source_url)
     if brand_id == '165':
-        DSquaredParser = DSquaredProductParser()
-        DSquaredParser.job_id = job_id
+        DSquaredParser = DSquaredProductParser(job_id)
         DSquaredParser.parse_website(source_url)
     if brand_id == '118':
-        CelineParser = CelineProductParser()
-        CelineParser.job_id = job_id
+        CelineParser = CelineProductParser(job_id)
         CelineParser.parse_website(source_url)
     if brand_id == '336':
-        MarniParser = MarniProductParser()
-        MarniParser.job_id = job_id
+        MarniParser = MarniProductParser(job_id)
         MarniParser.parse_website(source_url)
     if brand_id == '439':
-        PradaParser = PradaProductParser()
-        PradaParser.job_id = job_id
+        PradaParser = PradaProductParser(job_id)
         PradaParser.parse_website(source_url)
     if brand_id == '536':
-        ValentinoParser = ValentinoProductParser()
-        ValentinoParser.job_id = job_id
+        ValentinoParser = ValentinoProductParser(job_id)
         ValentinoParser.parse_website(source_url)
     if brand_id == '263':
-        JacquemusParser = JacquemusProductParser()
-        JacquemusParser.job_id = job_id
+        JacquemusParser = JacquemusProductParser(job_id)
         JacquemusParser.parse_website(source_url)
     if brand_id == '7':
-        AcneStudiosParser = AcneStudiosProductParser()
-        AcneStudiosParser.job_id = job_id
+        AcneStudiosParser = AcneStudiosProductParser(job_id)
         AcneStudiosParser.parse_website(source_url)
     if brand_id == '512':
-        TheRowParser = TheRowProductParser()
-        TheRowParser.job_id = job_id
+        TheRowParser = TheRowProductParser(job_id)
         TheRowParser.parse_website(source_url)
     if brand_id == '327':
-        ManoloBlahnikParser = ManoloBlahnikProductParser()
-        ManoloBlahnikParser.job_id = job_id
+        ManoloBlahnikParser = ManoloBlahnikProductParser(job_id)
         ManoloBlahnikParser.parse_website(source_url)
     if brand_id == '223':
-        GianvitoRossiParser = GianvitoRossiProductParser()
-        GianvitoRossiParser.job_id = job_id
+        GianvitoRossiParser = GianvitoRossiProductParser(job_id)
         GianvitoRossiParser.parse_website(source_url)
     if brand_id == '358':
-        miuMiuParser = MiuMiuProductParser()
-        miuMiuParser.job_id = job_id
+        miuMiuParser = MiuMiuProductParser(job_id)
         miuMiuParser.parse_website(source_url)
     if brand_id == '46':
-        AquazzuraParser = AquazzuraProductParser()
-        AquazzuraParser.job_id = job_id
+        AquazzuraParser = AquazzuraProductParser(job_id)
         AquazzuraParser.parse_website(source_url)
     if brand_id == '523':
-        TomFordParser = TomFordProductParser()
-        TomFordParser.job_id = job_id
+        TomFordParser = TomFordProductParser(job_id)
         TomFordParser.parse_website(source_url)
     if brand_id == '604':
-        HernoParser = HernoProductParser()
-        HernoParser.job_id = job_id
+        HernoParser = HernoProductParser(job_id)
         HernoParser.parse_website(source_url)
     if brand_id == '286':
-        LanvinParser = LanvinProductParser()
-        LanvinParser.job_id = job_id
+        LanvinParser = LanvinProductParser(job_id)
         LanvinParser.parse_website(source_url)
-    if brand_id=='67':
-        BallyParser = BallyProductParser()
-        BallyParser.job_id = job_id
+    if brand_id == '67':
+        BallyParser = BallyProductParser(job_id)
         BallyParser.parse_website(source_url)
     if brand_id == '317':
-        LouboutinParser = LouboutinProductParser()
-        LouboutinParser.job_id = job_id
+        LouboutinParser = LouboutinProductParser(job_id)
         LouboutinParser.parse_website(source_url)
     if brand_id == '374':
-        MooseKnucklesParser = MooseKnucklesProductParser()
-        MooseKnucklesParser.job_id = job_id
+        MooseKnucklesParser = MooseKnucklesProductParser(job_id)
         MooseKnucklesParser.parse_website(source_url)
-    # NOT YET LOADED
     if brand_id == '???':
-        PalmAngelsParser = PalmAngelsProductParser()
-        PalmAngelsParser.job_id = job_id
+        PalmAngelsParser = PalmAngelsProductParser(job_id)
         PalmAngelsParser.parse_website(source_url)
     if brand_id == '???':
-        BirkenstockParser = BirkenstockProductParser()
-        BirkenstockParser.job_id = job_id
+        BirkenstockParser = BirkenstockProductParser(job_id)
         BirkenstockParser.parse_website(source_url)
-    if brand_id == '??? ':
-        OffWhiteParser = OffWhiteProductParser()
-        OffWhiteParser.job_id = job_id
+    if brand_id == '???':
+        OffWhiteParser = OffWhiteProductParser(job_id)
         OffWhiteParser.parse_website(source_url)
     if brand_id == '???':
-        CultGaiaParser=CultGaiaProductParser()
-        CultGaiaParser.job_id = job_id
+        CultGaiaParser = CultGaiaProductParser(job_id)
         CultGaiaParser.parse_website(source_url)
 
 
