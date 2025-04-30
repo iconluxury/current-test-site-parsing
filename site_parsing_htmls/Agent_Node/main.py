@@ -18,7 +18,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from fastapi import FastAPI, BackgroundTasks
 
-app=FastAPI()
+app = FastAPI(title="agent_brand_html_parser", version="2.0.0")
 class WebsiteParser:
     def __init__(self):
         self.output_filename = None
@@ -79,31 +79,35 @@ class WebsiteParser:
         self.logger.info(f"Data saved to '{file_path}'")
         return file_path
 
-    def upload_file_to_space(self,file_src, save_as, is_public=True):
+    def upload_file_to_space(self, file_src, save_as, is_public=True):
+        self.logger.info(f"Uploading file to space: {save_as}\n From: {file_src}")
         spaces_client = self.get_s3_client()
-        space_name = 'iconluxurygroup-s3'  # Your space name
-
-        spaces_client.upload_file(file_src, space_name, save_as, ExtraArgs={'ACL': 'public-read'})
-        self.logger.info(f"File uploaded successfully to {space_name}/{save_as}")
-        # Generate and return the public URL if the file is public
-        if is_public:
-            # upload_url = f"{str(os.getenv('SPACES_ENDPOINT'))}/{space_name}/{save_as}"
-            upload_url = f"https://iconluxurygroup-s3.s3.us-east-2.amazonaws.com/{save_as}"
-            self.logger.info(f"Public URL: {upload_url}")
-            return upload_url
-
+        if not spaces_client:
+            self.logger.error("S3 client creation failed. Cannot upload file.")
+            return None
+        space_name = 'archive.iconluxurygroup'
+        try:
+            spaces_client.upload_file(str(file_src), space_name, str(save_as))
+            self.logger.info(f"File uploaded successfully to {space_name}/{save_as}")
+            if is_public:
+                upload_url = f"https://{space_name}.s3.us-east-2.amazonaws.com/{save_as}"
+                print(f"Public URL: {upload_url}")
+                return upload_url
+        except Exception:
+            self.logger.error(f"Error occurred while uploading file to space: {traceback.format_exc()}")
+            return None
 
     def get_s3_client(self):
-        session = boto3.session.Session()
-        client = boto3.client(service_name='s3',
-                                region_name=os.getenv('REGION'),
-                                aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-                                aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'))
-        # client = boto3.client(service_name='s3',
-        #                       region_name=REGION,
-        #                       aws_access_key_id=AWS_ACCESS_KEY_ID,
-        #                       aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
-        return client
+        self.logger.info("Creating S3 client")
+        try:
+            region = os.getenv('AWS_REGION', 'us-east-2')
+            session = boto3.session.Session()
+            client = session.client(service_name='s3', region_name=region)
+            self.logger.info("S3 client created successfully")
+            return client
+        except Exception:
+            self.logger.error(f"Error occurred while creating S3 client: {traceback.format_exc()}")
+            return None
     def parse_website(self, source):
         category=source
         html_content = self.open_link(source)
@@ -138,8 +142,15 @@ class WebsiteParser:
             'logUrl': f"{self.log_url}",
             'count': self.count
         }
-        os.remove(self.output_filename)
-        os.remove(self.log_file_name)
+                # Remove files and directory if they exist
+        try:
+            if os.path.exists(self.output_filename):
+                os.remove(self.output_filename)
+            if os.path.exists(self.log_file_name):
+                os.remove(self.log_file_name)
+        except Exception as e:
+            self.logger.error(f"Error cleaning up files/directories: {traceback.format_exc()}")
+
         requests.post(f"{send_out_endpoint}/job_complete", params=params, headers=headers)
     @staticmethod
     def open_link(url):
