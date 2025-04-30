@@ -85,7 +85,12 @@ class WebsiteParser:
             return None
         space_name = 'archive.iconluxurygroup'
         try:
-            spaces_client.upload_file(str(file_src), space_name, str(save_as))
+            spaces_client.upload_file(
+                str(file_src),
+                space_name,
+                str(save_as),
+                ExtraArgs={'ACL': 'public-read'} if is_public else None
+            )
             self.logger.info(f"File uploaded successfully to {space_name}/{save_as}")
             if is_public:
                 upload_url = f"https://{space_name}.s3.us-east-2.amazonaws.com/{save_as}"
