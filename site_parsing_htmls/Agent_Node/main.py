@@ -107,25 +107,27 @@ class WebsiteParser:
             self.logger.error(f"Error occurred while creating S3 client: {traceback.format_exc()}")
             return None
     def parse_website(self, source):
-        category=source
+        category = source
         html_content = self.open_link(source)
+        if html_content is None:
+            self.logger.error(f"Failed to fetch HTML content from {source}")
+            return
         soup = BeautifulSoup(html_content, 'html.parser')
-        parsed_data = self.parse_product_blocks(soup,category)
-        all_data=parsed_data[0]
+        parsed_data = self.parse_product_blocks(soup, category)
+        all_data = parsed_data[0]
         all_data.append('source')
-        all_data=[all_data]
+        all_data = [all_data]
         print(all_data)
         for row in parsed_data[1:]:
             row.extend([source])
             all_data.append(row)
         print(all_data)
-        all_data=self.convert_to_tsv(all_data)
-        file_name=self.write_to_csv(all_data)
-        #return to API which updates SQL
-        self.output_filename=file_name
-        self.upload_url=self.upload_file_to_space(file_name,file_name)
-        self.count=len(all_data)-1
-        self.log_url=self.upload_file_to_space(self.log_file_name,self.log_file_name)
+        all_data = self.convert_to_tsv(all_data)
+        file_name = self.write_to_csv(all_data)
+        self.output_filename = file_name
+        self.upload_url = self.upload_file_to_space(file_name, file_name)
+        self.count = len(all_data) - 1
+        self.log_url = self.upload_file_to_space(self.log_file_name, self.log_file_name)
         self.send_output()
     def send_output(self):
         logging.shutdown()
@@ -154,24 +156,23 @@ class WebsiteParser:
     def open_link(url):
         try:
             session = requests.Session()
-            # Setup retry strategy
             retries = Retry(
                 total=5,
                 backoff_factor=0.5,
                 status_forcelist=[429, 500, 502, 503, 504],
-                allowed_methods=["HEAD", "GET", "OPTIONS"]  # Updated to use allowed_methods instead of method_whitelist
+                allowed_methods=["HEAD", "GET", "OPTIONS"]
             )
             session.mount("https://", HTTPAdapter(max_retries=retries))
-            headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.3"}
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.3"
+            }
             print(url)
-            response = session.get(url,headers=headers,allow_redirects=True)
-            response.raise_for_status()  # Raises an HTTPError for bad responses
+            response = session.get(url, headers=headers, allow_redirects=True, verify=False)  # Disable SSL verification
+            response.raise_for_status()
             return response.text
         except requests.exceptions.RequestException as e:
             print(f"An error occurred: {e}")
             return None
-
-
 class BottegaVenetaParser(WebsiteParser):
     def __init__(self, job_id):
         super().__init__(job_id, 'bottega_veneta')
