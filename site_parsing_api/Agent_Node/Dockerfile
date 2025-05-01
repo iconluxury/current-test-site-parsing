@@ -18,6 +18,14 @@ RUN apt-get clean && \
         libxrender1 \
         libxi6 \
         libx11-6 \
+        libxss1 \
+        libappindicator3-1 \
+        libasound2 \
+        libatk1.0-0 \
+        libatk-bridge2.0-0 \
+        libpango-1.0-0 \
+        libpangocairo-1.0-0 \
+        libgtk-3-0 \
         xvfb && \
     # Install Google Chrome
     wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
@@ -27,11 +35,9 @@ RUN apt-get clean && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Install ChromeDriver compatible with the installed Chrome version
-RUN CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+') && \
-    CHROMEDRIVER_VERSION=$(wget -qO- https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION}) && \
-    wget -qO /tmp/chromedriver_linux64.zip "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip" && \
-    unzip -oj /tmp/chromedriver_linux64.zip -d /usr/bin && \
+# Install ChromeDriver (pinned to a known compatible version)
+RUN wget -qO /tmp/chromedriver_linux64.zip "https://storage.googleapis.com/chrome-for-testing-public/127.0.6533.88/linux64/chromedriver-linux64.zip" && \
+    unzip -oj /tmp/chromedriver_linux64.zip chromedriver-linux64/chromedriver -d /usr/bin && \
     chmod 755 /usr/bin/chromedriver && \
     rm /tmp/chromedriver_linux64.zip && \
     chromedriver --version
@@ -49,7 +55,6 @@ COPY main.py .
 # Expose the port for the FastAPI application
 EXPOSE 8080
 
-# Define environment variables (placeholders, to be set at runtime)
 ENV AWS_ACCESS_KEY_ID="AKIA2CUNLEV6V627SWI7"
 ENV AWS_SECRET_ACCESS_KEY="QGwMNj0O0ChVEpxiEEyKu3Ye63R+58ql3iSFvHfs"
 ENV AWS_REGION="us-east-2"
