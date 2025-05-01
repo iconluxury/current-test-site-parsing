@@ -1,6 +1,7 @@
 import re
 from urllib.parse import urljoin, urlunparse, urlparse
 from selenium import webdriver
+import traceback
 import json
 import html
 import time
