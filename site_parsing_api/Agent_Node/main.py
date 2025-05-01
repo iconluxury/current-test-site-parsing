@@ -32,7 +32,7 @@ for var in required_env_vars:
         raise EnvironmentError(f"Environment variable {var} is not set")
 
 
-app = FastAPI(title="agent_brand_api_scraper", version="2.0.1")
+app = FastAPI(title="agent_brand_api_scraper", version="2.0.0")
 
 @app.post("/run_parser")
 async def brand_batch_endpoint(job_id: str, brand_id: str, send_out_endpoint_local: str, background_tasks: BackgroundTasks):
@@ -624,7 +624,7 @@ class SaintLaurentProductParser(WebsiteParser):
             self.logger.info(f"Category: {category}, Total Pages: {total_pages}")
 
             for page in range(total_pages):
-                current_url = self.base_url.format(category=category, page=page, locale Robotic Process Automation (RPA)locale)
+                current_url = self.base_url.format(category=category, page=page, locale=locale)
                 self.logger.info(f"Fetching URL: {current_url}")
                 response = session.get(current_url, headers=headers)
                 response.raise_for_status()
