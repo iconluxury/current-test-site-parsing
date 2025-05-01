@@ -19,7 +19,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from fastapi import FastAPI, BackgroundTasks
 
-app = FastAPI(title="agent_brand_html_parser", version="2.0.0")
+app = FastAPI(title="agent_brand_html_parser", version="2.0.1")
 class WebsiteParser:
     def __init__(self, job_id, brand):
         self.output_filename = None
