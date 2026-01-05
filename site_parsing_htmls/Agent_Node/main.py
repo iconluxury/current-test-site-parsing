@@ -84,6 +84,17 @@ class WebsiteParser:
 
         # Write data to CSV
         with open(file_path, 'w', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file, delimiter=',')
+            writer.writerows(csv_data)
+        self.logger.info(f"Data saved to '{file_path}'")
+        return file_path
+
+    def upload_file_to_space(self, file_src, save_as, is_public=True):
+        self.logger.info(f"Uploading file to space: {save_as}\n From: {file_src}")
+        spaces_client = self.get_s3_client()
+        if not spaces_client:
+            self.logger.error("S3 client creation failed. Cannot upload file.")
+            return None
         
         r2_settings = self.config.get("r2_settings", {})
         space_name = r2_settings.get("bucket_name", 'archive.iconluxurygroup')
@@ -101,18 +112,7 @@ class WebsiteParser:
                 if public_domain:
                     upload_url = f"{public_domain}/{save_as}"
                 else:
-                return None
-        space_name = 'archive.iconluxurygroup'
-        try:
-            spaces_client.upload_file(
-                str(file_src),
-                space_name,
-                str(save_as),
-                ExtraArgs={'ACL': 'public-read'} if is_public else None
-            )
-            self.logger.info(f"File uploaded successfully to {space_name}/{save_as}")
-            if is_public:
-                upload_url = f"https://{space_name}.s3.us-east-2.amazonaws.com/{save_as}"
+                    upload_url = f"https://{space_name}.s3.us-east-2.amazonaws.com/{save_as}"
                 print(f"Public URL: {upload_url}")
                 return upload_url
         except Exception:
@@ -122,6 +122,22 @@ class WebsiteParser:
     def get_s3_client(self):
         self.logger.info("Creating S3 client")
         try:
+            r2_settings = self.config.get("r2_settings", {})
+            endpoint_url = r2_settings.get("endpoint_url")
+            access_key = r2_settings.get("access_key_id")
+            secret_key = r2_settings.get("secret_access_key")
+
+            if endpoint_url and access_key and secret_key:
+                session = boto3.session.Session()
+                client = session.client(
+                    service_name='s3',
+                    endpoint_url=endpoint_url,
+                    aws_access_key_id=access_key,
+                    aws_secret_access_key=secret_key
+                )
+                self.logger.info("S3 client created successfully using R2 config")
+                return client
+
             region = os.getenv('AWS_REGION', 'us-east-2')
             session = boto3.session.Session()
             client = session.client(service_name='s3', region_name=region)
@@ -3104,7 +3120,7 @@ def run_parser(job_id, brand_id, source_url):
         CultGaiaParser.parse_website(source_url)
 
 
-@app.post("/run_parser")
+@app.post("/run_html")
 async def brand_batch_endpoint(job_id:str, brand_id: str, scan_url:str,send_out_endpoint_local:str, background_tasks: BackgroundTasks):
     global send_out_endpoint
     send_out_endpoint=send_out_endpoint_local
