@@ -191,7 +191,7 @@ class WebsiteParser:
             'resultUrl': f"{self.upload_url}",
             'logUrl': f"{self.log_url}",
             'count': self.count,
-            'startTime': f"{self.start_time}"
+            'startTime': self.start_time.strftime('%Y-%m-%d %H:%M:%S') if self.start_time else datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
                 # Remove files and directory if they exist
         try:
