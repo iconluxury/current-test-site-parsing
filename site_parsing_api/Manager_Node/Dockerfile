@@ -23,7 +23,7 @@ RUN apt-get install -y apt-transport-https && \
     apt-get install -y unixodbc unixodbc-dev
 
 # Add Microsoft package repository and install msodbcsql17
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
     curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
     apt-get update --fix-missing && \
     ACCEPT_EULA=Y apt-get install -y msodbcsql17 && \
