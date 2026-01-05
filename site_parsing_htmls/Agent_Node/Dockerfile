@@ -18,7 +18,7 @@ RUN apt-get clean && \
 
 # Install necessary libraries, wget, and unzip
 RUN apt-get update && apt-get install -y wget unzip \
-    libglib2.0-0 libnss3 libgconf-2-4 libfontconfig1 libxrender1 libxi6 libx11-6 \
+    libglib2.0-0 libnss3 libfontconfig1 libxrender1 libxi6 libx11-6 \
     xvfb  # add xvfb if you need a virtual framebuffer
 # Install Chrome
 RUN apt-get update && apt-get install -y wget gnupg2 unzip \
