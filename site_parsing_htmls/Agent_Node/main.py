@@ -104,23 +104,7 @@ class WebsiteParser:
                 return None
         space_name = 'archive.iconluxurygroup'
         try:
-            s2_settings = self.config.get("r2_settings", {})
-            endpoint_url = r2_settings.get("endpoint_url")
-            access_key = r2_settings.get("access_key_id")
-            secret_key = r2_settings.get("secret_access_key")
-
-            if endpoint_url and access_key and secret_key:
-                session = boto3.session.Session()
-                client = session.client(
-                    service_name='s3',
-                    endpoint_url=endpoint_url,
-                    aws_access_key_id=access_key,
-                    aws_secret_access_key=secret_key
-                )
-                self.logger.info("S3 client created successfully using R2 config")
-                return client
-
-            rpaces_client.upload_file(
+            spaces_client.upload_file(
                 str(file_src),
                 space_name,
                 str(save_as),

@@ -95,8 +95,8 @@ def procces_brand_single(job_id):
     brand_id = str(df.iloc[0,0])
     print(brand_id,url)
     print(f"Processing job {job_id} with URL: {url}")
-    send_in_endpoint=fetch_endpoint(7)
-    send_out_endpoint=fetch_endpoint(11)
+    send_in_endpoint=fetch_endpoint(9)
+    send_out_endpoint=fetch_endpoint(8)
     response_status = submit_job_post(job_id,brand_id,url,send_in_endpoint,send_out_endpoint)
 
 
