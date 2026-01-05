@@ -22,13 +22,13 @@ RUN apt-get install -y apt-transport-https && \
     apt-get install -y lsb-release && \
     apt-get install -y unixodbc unixodbc-dev
 
-# Add Microsoft package repository and install msodbcsql17
+# Add Microsoft package repository and install msodbcsql18
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
     curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
     apt-get update --fix-missing && \
-    ACCEPT_EULA=Y apt-get install -y msodbcsql17 && \
-    ACCEPT_EULA=Y apt-get install -y mssql-tools && \
-    echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
+    ACCEPT_EULA=Y apt-get install -y msodbcsql18 && \
+    ACCEPT_EULA=Y apt-get install -y mssql-tools18 && \
+    echo 'export PATH="$PATH:/opt/mssql-tools18/bin"' >> ~/.bashrc
 
 # Verify installation of unixODBC
 RUN which odbcinst
