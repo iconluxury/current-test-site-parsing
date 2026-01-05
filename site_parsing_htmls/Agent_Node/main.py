@@ -96,13 +96,14 @@ class WebsiteParser:
             self.logger.error("S3 client creation failed. Cannot upload file.")
             return None
         
-        r2_settings = self.config.get("r2_settings", {})
-        space_name = r2_settings.get("bucket_name", 'archive.iconluxurygroup')
-        public_domain = r2_settings.get("public_domain")
+        s3_config = self.config.get("s3_config", {})
+        space_name = s3_config.get("r2_bucket_name", 'archive.iconluxurygroup')
+        public_domain = s3_config.get("r2_custom_domain")
 
         try:
             # R2 buckets might not support ACLs, so we can omit ExtraArgs if using R2
-            extra_args = {'ACL': 'public-read'} if is_public and not r2_settings else None
+            # Since we are enforcing R2, we assume no ACLs needed or handled differently
+            extra_args = None 
             
             spaces_client.upload_file(
                 str(file_src),
@@ -116,13 +117,11 @@ class WebsiteParser:
                     if not public_domain.startswith("http"):
                         public_domain = f"https://{public_domain}"
                     upload_url = f"{public_domain}/{save_as}"
-                elif r2_settings:
+                else:
                      # If R2 is used but no public domain, we can't construct a standard S3 URL.
                      # We'll log a warning and return None or a best-guess.
                      self.logger.warning("R2 used but no public_domain in config.")
                      return None
-                else:
-                    upload_url = f"https://{space_name}.s3.us-east-2.amazonaws.com/{save_as}"
                 print(f"Public URL: {upload_url}")
                 return upload_url
         except Exception:
@@ -132,10 +131,10 @@ class WebsiteParser:
     def get_s3_client(self):
         self.logger.info("Creating S3 client")
         try:
-            r2_settings = self.config.get("r2_settings", {})
-            endpoint_url = r2_settings.get("endpoint_url")
-            access_key = r2_settings.get("access_key_id")
-            secret_key = r2_settings.get("secret_access_key")
+            s3_config = self.config.get("s3_config", {})
+            endpoint_url = s3_config.get("r2_endpoint")
+            access_key = s3_config.get("r2_access_key")
+            secret_key = s3_config.get("r2_secret_key")
 
             if endpoint_url and access_key and secret_key:
                 session = boto3.session.Session()
