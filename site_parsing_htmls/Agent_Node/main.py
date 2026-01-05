@@ -31,6 +31,17 @@ class WebsiteParser:
         self.job_id = job_id  # Set job_id
         self.brand = brand    # Set brand
         self.setup_logging()   # Call setup_logging after job_id and brand are set
+        self.config = self.fetch_config()
+
+    def fetch_config(self):
+        try:
+            config_url = "https://iconluxury.shop/secrets/secrets_scraper_config.json"
+            response = requests.get(config_url, timeout=10)
+            if response.status_code == 200:
+                return response.json()
+        except Exception as e:
+            self.logger.error(f"Error fetching config: {e}")
+        return {}
 
     def setup_logging(self):
         current_date = datetime.datetime.now().strftime("%d_%m_%Y")
@@ -73,20 +84,43 @@ class WebsiteParser:
 
         # Write data to CSV
         with open(file_path, 'w', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file, delimiter=',')
-            writer.writerows(csv_data)
-        self.logger.info(f"Data saved to '{file_path}'")
-        return file_path
+        
+        r2_settings = self.config.get("r2_settings", {})
+        space_name = r2_settings.get("bucket_name", 'archive.iconluxurygroup')
+        public_domain = r2_settings.get("public_domain")
 
-    def upload_file_to_space(self, file_src, save_as, is_public=True):
-        self.logger.info(f"Uploading file to space: {save_as}\n From: {file_src}")
-        spaces_client = self.get_s3_client()
-        if not spaces_client:
-            self.logger.error("S3 client creation failed. Cannot upload file.")
-            return None
-        space_name = 'archive.iconluxurygroup'
         try:
             spaces_client.upload_file(
+                str(file_src),
+                space_name,
+                str(save_as),
+                ExtraArgs={'ACL': 'public-read'} if is_public else None
+            )
+            self.logger.info(f"File uploaded successfully to {space_name}/{save_as}")
+            if is_public:
+                if public_domain:
+                    upload_url = f"{public_domain}/{save_as}"
+                else:
+                return None
+        space_name = 'archive.iconluxurygroup'
+        try:
+            s2_settings = self.config.get("r2_settings", {})
+            endpoint_url = r2_settings.get("endpoint_url")
+            access_key = r2_settings.get("access_key_id")
+            secret_key = r2_settings.get("secret_access_key")
+
+            if endpoint_url and access_key and secret_key:
+                session = boto3.session.Session()
+                client = session.client(
+                    service_name='s3',
+                    endpoint_url=endpoint_url,
+                    aws_access_key_id=access_key,
+                    aws_secret_access_key=secret_key
+                )
+                self.logger.info("S3 client created successfully using R2 config")
+                return client
+
+            rpaces_client.upload_file(
                 str(file_src),
                 space_name,
                 str(save_as),
