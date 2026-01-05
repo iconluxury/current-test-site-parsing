@@ -101,16 +101,26 @@ class WebsiteParser:
         public_domain = r2_settings.get("public_domain")
 
         try:
+            # R2 buckets might not support ACLs, so we can omit ExtraArgs if using R2
+            extra_args = {'ACL': 'public-read'} if is_public and not r2_settings else None
+            
             spaces_client.upload_file(
                 str(file_src),
                 space_name,
                 str(save_as),
-                ExtraArgs={'ACL': 'public-read'} if is_public else None
+                ExtraArgs=extra_args
             )
             self.logger.info(f"File uploaded successfully to {space_name}/{save_as}")
             if is_public:
                 if public_domain:
+                    if not public_domain.startswith("http"):
+                        public_domain = f"https://{public_domain}"
                     upload_url = f"{public_domain}/{save_as}"
+                elif r2_settings:
+                     # If R2 is used but no public domain, we can't construct a standard S3 URL.
+                     # We'll log a warning and return None or a best-guess.
+                     self.logger.warning("R2 used but no public_domain in config.")
+                     return None
                 else:
                     upload_url = f"https://{space_name}.s3.us-east-2.amazonaws.com/{save_as}"
                 print(f"Public URL: {upload_url}")
@@ -138,11 +148,8 @@ class WebsiteParser:
                 self.logger.info("S3 client created successfully using R2 config")
                 return client
 
-            region = os.getenv('AWS_REGION', 'us-east-2')
-            session = boto3.session.Session()
-            client = session.client(service_name='s3', region_name=region)
-            self.logger.info("S3 client created successfully")
-            return client
+            self.logger.error("R2 settings not found in config. Cannot create client.")
+            return None
         except Exception:
             self.logger.error(f"Error occurred while creating S3 client: {traceback.format_exc()}")
             return None

@@ -39,8 +39,5 @@ RUN chmod 755 /usr/bin/chromedriver
 RUN chromedriver --version
 
 COPY main.py .
-ENV AWS_ACCESS_KEY_ID="AKIA2CUNLEV6V627SWI7"
-ENV AWS_SECRET_ACCESS_KEY="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"
-ENV AWS_REGION="us-east-2"
 EXPOSE 8080
 CMD ["python", "main.py"]
