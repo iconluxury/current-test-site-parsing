@@ -6,3 +6,4 @@ boto3==1.28.1
 pandas
 SQLAlchemy==2.0.15
 pyodbc
+sendgrid
