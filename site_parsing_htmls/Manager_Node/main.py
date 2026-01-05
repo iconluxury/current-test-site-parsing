@@ -44,10 +44,10 @@ app = FastAPI()
 current_directory = os.getcwd()
 
 def update_sql_job(job_id, resultUrl,logUrl,count):
-    sql=(f"Update utb_BrandScanJobs Set ResultURL = '{resultUrl}',\n"
-    f"HarverstLogURL = '{logUrl}',\n"
-    f"HarvestCount =  {count},\n"
-    f" HarvestEnd = getdate()\n"
+    sql=(f"Update utb_BrandScanJobs Set ParsingResultUrl = '{resultUrl}',\n"
+    f"ParsingLogURL = '{logUrl}',\n"
+    f"ParsingCount =  {count},\n"
+    f" ParsingEnd = getdate()\n"
     f" Where ID = {job_id}")
     if len(sql) > 0:
         ip = requests.get('https://api.ipify.org').content.decode('utf8')
