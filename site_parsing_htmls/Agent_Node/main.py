@@ -25,6 +25,7 @@ class WebsiteParser:
         self.output_filename = None
         self.upload_url = None
         self.count = 0
+        self.start_time = None
         self.log_url = None
         self.session = requests.Session()
         self.code = str(uuid.uuid4())
@@ -84,6 +85,7 @@ class WebsiteParser:
 
         # Write data to CSV
         with open(file_path, 'w', newline='', encoding='utf-8') as file:
+            file.truncate()
             writer = csv.writer(file, delimiter=',')
             writer.writerows(csv_data)
         self.logger.info(f"Data saved to '{file_path}'")
@@ -153,6 +155,8 @@ class WebsiteParser:
             self.logger.error(f"Error occurred while creating S3 client: {traceback.format_exc()}")
             return None
     def parse_website(self, source):
+        self.start_time = datetime.datetime.now()
+        self.logger.info(f"Start time: {self.start_time}")
         category = source
         html_content = self.open_link(source)
         if html_content is None:
@@ -186,7 +190,8 @@ class WebsiteParser:
             'job_id': f"{self.job_id}",
             'resultUrl': f"{self.upload_url}",
             'logUrl': f"{self.log_url}",
-            'count': self.count
+            'count': self.count,
+            'startTime': f"{self.start_time}"
         }
                 # Remove files and directory if they exist
         try:

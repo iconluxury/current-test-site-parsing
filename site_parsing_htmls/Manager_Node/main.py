@@ -43,10 +43,11 @@ app = FastAPI()
 
 current_directory = os.getcwd()
 
-def update_sql_job(job_id, resultUrl,logUrl,count):
+def update_sql_job(job_id, resultUrl,logUrl,count, startTime):
     sql=(f"Update utb_BrandScanJobs Set ParsingResultUrl = '{resultUrl}',\n"
     f"ParsingLogURL = '{logUrl}',\n"
     f"ParsingCount =  {count},\n"
+    f"ParsingStart = '{startTime}',\n"
     f" ParsingEnd = getdate()\n"
     f" Where ID = {job_id}")
     if len(sql) > 0:
@@ -70,8 +71,8 @@ def fetch_endpoint(endpoint_id):
     return endpoint_url
 
 @app.post("/job_complete")
-async def brand_batch_endpoint(job_id: str, resultUrl:str,logUrl:str,count:int,background_tasks: BackgroundTasks):
-    background_tasks.add_task(update_sql_job, job_id, resultUrl ,logUrl ,count)
+async def brand_batch_endpoint(job_id: str, resultUrl:str,logUrl:str,count:int,startTime:str,background_tasks: BackgroundTasks):
+    background_tasks.add_task(update_sql_job, job_id, resultUrl ,logUrl ,count, startTime)
 
     return {"message": "Notification sent in the background"}
 
